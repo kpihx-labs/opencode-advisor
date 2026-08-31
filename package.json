@@ -1,7 +1,7 @@
 {
-  "name": "@stefanobalocco/opencode-advisor",
-  "version": "2.3.1",
-  "description": "OpenCode plugin — advisor() tool via a hidden internal agent",
+  "name": "@kpihx-labs/opencode-advisor",
+  "version": "0.1.0",
+  "description": "OpenCode plugin — advisor() tool + /btw command. KπX sovereign fork (StefanoBalocco base + u007 /btw)",
   "type": "module",
   "main": "dist/plugin.js",
   "types": "dist/plugin.d.ts",
@@ -9,11 +9,17 @@
     ".": {
       "types": "./dist/plugin.d.ts",
       "import": "./dist/plugin.js"
+    },
+    "./btw": {
+      "types": "./dist/btw.d.ts",
+      "import": "./dist/btw.js"
     }
   },
   "files": [
     "dist/plugin.js",
-    "dist/plugin.d.ts"
+    "dist/plugin.d.ts",
+    "dist/btw.js",
+    "dist/btw.d.ts"
   ],
   "scripts": {
     "build": "node build.mjs all",
@@ -24,24 +30,26 @@
   "keywords": [
     "opencode",
     "plugin",
-    "advisor"
+    "advisor",
+    "btw",
+    "kpihx"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/StefanoBalocco/opencode-advisor.git"
+    "url": "git+https://github.com/kpihx-labs/opencode-advisor.git"
   },
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@opencode-ai/plugin": ">=1.4.9"
+    "@opencode-ai/plugin": ">=1.4.9",
+    "@opencode-ai/sdk": ">=1.4.9"
   },
   "devDependencies": {
     "typescript": "~6",
     "ava": "~6",
     "c8": "~12",
-    "@opencode-ai/sdk": ">=1.4.9",
     "@types/node": "~24"
   }
 }

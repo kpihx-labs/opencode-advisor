@@ -4,14 +4,15 @@ This file governs OpenCode agent behavior in this repository. See [README.md](RE
 
 ## Repository purpose
 
-`@stefanobalocco/opencode-advisor` provides two features:
+`@kpihx-labs/opencode-advisor` — KπX sovereign fork of `StefanoBalocco/opencode-advisor`. Provides three features:
 
-1. The `advisor()` tool, which consults a strategic model on demand.
-2. Auto-escalation: after a configurable number of consecutive tool errors, the plugin aborts the failing session, obtains hidden-advisor guidance, and resumes the source agent in a new turn.
+1. **`advisor()` tool** — consults a strategic model on demand.
+2. **Auto-escalation** — after a configurable number of consecutive tool errors, the plugin aborts the failing session, obtains hidden-advisor guidance, and resumes the source agent in a new turn.
+3. **`/btw` command** — spawns an ephemeral sub-session to answer a by-the-way question without interrupting the currently running agent (forked from `u007/opencode-advisor`).
 
 ## Architecture
 
-`plugin.ts` is the only source entry point. Its factory registers the hidden `opencode-advisor:advisor` subagent in the `config` hook with its own prompt, model, temperature, and fixed read-only permission policy.
+Two source entry points: `src/plugin.ts` (advisor + auto-escalation) and `src/btw.ts` (/btw command).
 
 ### advisor() tool
 
@@ -45,19 +46,67 @@ Recursion exclusion: tool events from the internal advisor-session set are ignor
 
 The shared advisor lifecycle (`_callAdvisor`) creates an ephemeral session, adds its ID to `advisorSessions`, prompts the hidden agent, extracts text, then removes the ID and deletes in `finally`. Both the manual tool and automatic intervention use this same function.
 
-## Configuration invariants
+### /btw command
+
+The `command.execute.before` hook intercepts `/btw <query>` commands. It:
+
+1. Acknowledges immediately (agent continues working).
+2. Fetches the session transcript, filtering out `/btw` user messages.
+3. Creates an ephemeral session with the system prompt from `src/prompts/btw.md`.
+4. Prompts the advisor model with transcript + question.
+5. Appends the answer as a card to the main session.
+6. Deletes the ephemeral session.
+
+A recursion guard (`inBtwCall`) prevents nested calls.
+
+## Configuration
+
+### Advisor (plugin.ts)
 
 The optional profile object is validated at plugin initialization. Model resolution uses the first available value: profile `model`, `agent.plan.model`, global `model`, then the `deepseek/deepseek-v4-pro` fallback.
 
+```json
+{
+  "plugin": [
+    ["@kpihx-labs/opencode-advisor", {
+      "model": "deepseek/deepseek-v4-pro",
+      "failureThreshold": 3,
+      "temperature": 0
+    }]
+  ]
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `model` | `"provider/model"` | `deepseek/deepseek-v4-pro` | Advisor model |
+| `failureThreshold` | positive integer | `3` | Consecutive errors before auto-escalation |
+| `temperature` | finite number | `0` | Advisor temperature |
+| `prompt` | string | built-in | Custom system prompt (replaces default) |
+| `variant` | string | — | Model variant |
+| `top_p` | finite number | — | Top-p sampling |
+| `options` | JSON-safe object | — | Provider-specific settings |
+
 A supplied `prompt`, including an empty string, replaces the built-in prompt. `temperature` falls back to `0`. `top_p`, `variant`, and `options` are set only when supplied. Profile `options` accepts JSON-safe plain objects and is cloned before registration.
 
-`failureThreshold` accepts a positive integer (default `3`). Invalid values (0, negative, non-integer, non-finite, non-number) throw a named error.
+Per-agent opt-out: set `"tools": { "advisor": false }` for any agent in `opencode.jsonc` to prevent auto-escalation for that agent.
 
-The plugin does not read environment variables.
+### /btw (btw.ts)
+
+Same model resolution cascade as advisor. Pass options via separate plugin entry:
+
+```json
+{
+  "plugin": [
+    ["@kpihx-labs/opencode-advisor", { "model": "deepseek/deepseek-v4-pro" }],
+    ["@kpihx-labs/opencode-advisor/btw", { "model": "deepseek/deepseek-v4-pro" }]
+  ]
+}
+```
 
 ## Fixed permissions
 
-The hidden agent always receives this policy:
+The hidden advisor agent always receives this policy:
 
 ```json
 {
@@ -85,12 +134,29 @@ The hidden agent always receives this policy:
 
 No write access, LSP, task or todo tools, MCP tools, or arbitrary Bash commands are available.
 
+## File structure
+
+```
+src/
+├── plugin.ts          # advisor() tool + auto-escalation
+├── btw.ts             # /btw slash command
+└── prompts/
+    └── btw.md         # /btw system prompt (loaded at runtime)
+dist/
+├── plugin.js + .d.ts  # compiled advisor
+├── btw.js + .d.ts     # compiled /btw
+```
+
 ## Development
 
 ```bash
 npm install
-npm run build
-npm run tests
+node build.mjs all    # compile both plugin.ts + btw.ts
+node build.mjs plugin # compile plugin only
 ```
 
-The build compiles `plugin.ts` and `plugin.test.ts` to JavaScript. The published package entry is `plugin.js`.
+## Forks
+
+- **Base:** `StefanoBalocco/opencode-advisor` v2.3.1 — advisor tool + auto-escalation
+- **Added:** `/btw` command from `u007/opencode-advisor` v1.2.3
+- **Changed:** package name → `@kpihx-labs/opencode-advisor`, prompt moved to `src/prompts/btw.md`

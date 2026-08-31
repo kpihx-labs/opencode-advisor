@@ -21,6 +21,7 @@
     "types": ["node"]
   },
   "files": [
-    "src/plugin.ts"
+    "src/plugin.ts",
+    "src/btw.ts"
   ]
 }
