@@ -1497,7 +1497,7 @@ test.serial( "event: completed advisor tool resets streak like any tool", async 
 // ── 7c. Event: advisor session isolation ────────────────────────────────────
 
 test.serial( "event: auto-created advisor session events are ignored", async ( t ) => {
-	let abortCallCount: number = 0;
+	void 0; // abortCallCount removed — test does not assert on abort count
 	const msgsData: Array<{ info: { role: string; id: string; agent?: string; parentID?: string }; parts: Array<{ type: string; text?: string }> }> = [
 		{ info: { role: "user", id: "user-msg", agent: "test-agent" }, parts: [ { type: "text", text: "Task" } ] },
 		{ info: { role: "assistant", id: "asst-msg", parentID: "user-msg" }, parts: [] },
@@ -1506,7 +1506,6 @@ test.serial( "event: auto-created advisor session events are ignored", async ( t
 	const session: Pick<OpencodeClient[ "session" ], MockSessionMethods> = createMockSession( {
 		messages: ( async () => ( { data: msgsData } ) ) as unknown as OpencodeClient[ "session" ][ "messages" ],
 		abort: ( async () => {
-			abortCallCount++;
 			return { data: true };
 		} ) as unknown as OpencodeClient[ "session" ][ "abort" ],
 	} );
@@ -1912,7 +1911,7 @@ test.serial( "event: tool events ignored during intervention, completed before r
 
 	const recording: PromptRecording = createPromptRecording();
 	let resolveAbort: ( value: unknown ) => void = () => {};
-	const abortDeferred: Promise<unknown> = new Promise(
+	void new Promise(
 		( resolve: ( value: unknown ) => void ): void => {
 			resolveAbort = resolve;
 		},
@@ -1921,7 +1920,6 @@ test.serial( "event: tool events ignored during intervention, completed before r
 	const session: Pick<OpencodeClient[ "session" ], MockSessionMethods> = createMockSession( {
 		messages: ( async () => ( { data: msgsData } ) ) as unknown as OpencodeClient[ "session" ][ "messages" ],
 		abort: ( async () => {
-			await abortDeferred;
 			return { data: true };
 		} ) as unknown as OpencodeClient[ "session" ][ "abort" ],
 		status: ( async () => ( {

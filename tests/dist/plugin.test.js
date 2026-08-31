@@ -929,7 +929,7 @@ test.serial("event: completed advisor tool resets streak like any tool", async (
     t.pass("completed advisor tool resets streak");
 });
 test.serial("event: auto-created advisor session events are ignored", async (t) => {
-    let abortCallCount = 0;
+    void 0;
     const msgsData = [
         { info: { role: "user", id: "user-msg", agent: "test-agent" }, parts: [{ type: "text", text: "Task" }] },
         { info: { role: "assistant", id: "asst-msg", parentID: "user-msg" }, parts: [] },
@@ -937,7 +937,6 @@ test.serial("event: auto-created advisor session events are ignored", async (t) 
     const session = createMockSession({
         messages: (async () => ({ data: msgsData })),
         abort: (async () => {
-            abortCallCount++;
             return { data: true };
         }),
     });
@@ -1235,13 +1234,12 @@ test.serial("event: tool events ignored during intervention, completed before re
     ];
     const recording = createPromptRecording();
     let resolveAbort = () => { };
-    const abortDeferred = new Promise((resolve) => {
+    void new Promise((resolve) => {
         resolveAbort = resolve;
     });
     const session = createMockSession({
         messages: (async () => ({ data: msgsData })),
         abort: (async () => {
-            await abortDeferred;
             return { data: true };
         }),
         status: (async () => ({

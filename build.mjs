@@ -84,7 +84,7 @@ function validateBuildTargets( targets ) {
 // ── Target runner ─────────────────────────────────────────────────────────────
 
 async function runTarget( target ) {
-	const [ name, configFile, filesToMinify, prefix ] = target;
+	const [ name, configFile, _filesToMinify, prefix ] = target;
 	const dir = path.resolve( __dirname, prefix ?? '.' );
 	const absConfig = path.resolve( dir, configFile );
 	log( name.toUpperCase(), 'Compiling TypeScript...' );
