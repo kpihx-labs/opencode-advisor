@@ -10,7 +10,7 @@ import type {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const defaultModel: string = "deepseek/deepseek-v4-pro";
+const defaultModel: string = "opencode-go/deepseek-v4-pro";
 const defaultFailureThreshold: number = 3;
 const advisorAgent: string = "opencode-advisor:advisor";
 

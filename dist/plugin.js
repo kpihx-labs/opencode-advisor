@@ -1,5 +1,5 @@
 import { tool } from "@opencode-ai/plugin";
-const defaultModel = "deepseek/deepseek-v4-pro";
+const defaultModel = "opencode-go/deepseek-v4-pro";
 const defaultFailureThreshold = 3;
 const advisorAgent = "opencode-advisor:advisor";
 const advisorDefaultPrompt = `Act as a strategic advisor to a coding agent. Read the conversation transcript, identify the current objective, and provide a concise plan or course correction.
