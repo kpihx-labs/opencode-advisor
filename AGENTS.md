@@ -4,15 +4,14 @@ This file governs OpenCode agent behavior in this repository. See [README.md](RE
 
 ## Repository purpose
 
-`@kpihx-labs/opencode-advisor` — KπX sovereign fork of `StefanoBalocco/opencode-advisor`. Provides three features:
+`@kpihx-labs/opencode-advisor` — KπX sovereign fork of `StefanoBalocco/opencode-advisor`. Provides two features:
 
 1. **`advisor()` tool** — consults a strategic model on demand.
 2. **Auto-escalation** — after a configurable number of consecutive tool errors, the plugin aborts the failing session, obtains hidden-advisor guidance, and resumes the source agent in a new turn.
-3. **`/btw` command** — spawns an ephemeral sub-session to answer a by-the-way question without interrupting the currently running agent (forked from `u007/opencode-advisor`).
 
 ## Architecture
 
-Two source entry points: `src/plugin.ts` (advisor + auto-escalation) and `src/btw.ts` (/btw command).
+`plugin.ts` is the only source entry point. Its factory registers the hidden `opencode-advisor:advisor` subagent in the `config` hook with its own prompt, model, temperature, and fixed read-only permission policy.
 
 ### advisor() tool
 
@@ -65,18 +64,6 @@ A recursion guard (`inBtwCall`) prevents nested calls.
 
 The optional profile object is validated at plugin initialization. Model resolution uses the first available value: profile `model`, `agent.plan.model`, global `model`, then the `deepseek/deepseek-v4-pro` fallback.
 
-```json
-{
-  "plugin": [
-    ["@kpihx-labs/opencode-advisor", {
-      "model": "deepseek/deepseek-v4-pro",
-      "failureThreshold": 3,
-      "temperature": 0
-    }]
-  ]
-}
-```
-
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `model` | `"provider/model"` | `deepseek/deepseek-v4-pro` | Advisor model |
@@ -90,19 +77,6 @@ The optional profile object is validated at plugin initialization. Model resolut
 A supplied `prompt`, including an empty string, replaces the built-in prompt. `temperature` falls back to `0`. `top_p`, `variant`, and `options` are set only when supplied. Profile `options` accepts JSON-safe plain objects and is cloned before registration.
 
 Per-agent opt-out: set `"tools": { "advisor": false }` for any agent in `opencode.jsonc` to prevent auto-escalation for that agent.
-
-### /btw (btw.ts)
-
-Same model resolution cascade as advisor. Pass options via separate plugin entry:
-
-```json
-{
-  "plugin": [
-    ["@kpihx-labs/opencode-advisor", { "model": "deepseek/deepseek-v4-pro" }],
-    ["@kpihx-labs/opencode-advisor/btw", { "model": "deepseek/deepseek-v4-pro" }]
-  ]
-}
-```
 
 ## Fixed permissions
 
@@ -138,13 +112,9 @@ No write access, LSP, task or todo tools, MCP tools, or arbitrary Bash commands 
 
 ```
 src/
-├── plugin.ts          # advisor() tool + auto-escalation
-├── btw.ts             # /btw slash command
-└── prompts/
-    └── btw.md         # /btw system prompt (loaded at runtime)
+└── plugin.ts          # advisor() tool + auto-escalation
 dist/
-├── plugin.js + .d.ts  # compiled advisor
-├── btw.js + .d.ts     # compiled /btw
+└── plugin.js + .d.ts  # compiled advisor
 ```
 
 ## Development
@@ -155,8 +125,6 @@ node build.mjs all    # compile both plugin.ts + btw.ts
 node build.mjs plugin # compile plugin only
 ```
 
-## Forks
+## Fork
 
 - **Base:** `StefanoBalocco/opencode-advisor` v2.3.1 — advisor tool + auto-escalation
-- **Added:** `/btw` command from `u007/opencode-advisor` v1.2.3
-- **Changed:** package name → `@kpihx-labs/opencode-advisor`, prompt moved to `src/prompts/btw.md`

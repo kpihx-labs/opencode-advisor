@@ -1,7 +1,7 @@
 {
   "name": "@kpihx-labs/opencode-advisor",
-  "version": "0.1.0",
-  "description": "OpenCode plugin — advisor() tool + /btw command. KπX sovereign fork (StefanoBalocco base + u007 /btw)",
+  "version": "0.2.0",
+  "description": "OpenCode plugin — advisor() tool + auto-escalation. KπX sovereign fork of StefanoBalocco/opencode-advisor.",
   "type": "module",
   "main": "dist/plugin.js",
   "types": "dist/plugin.d.ts",
@@ -9,17 +9,11 @@
     ".": {
       "types": "./dist/plugin.d.ts",
       "import": "./dist/plugin.js"
-    },
-    "./btw": {
-      "types": "./dist/btw.d.ts",
-      "import": "./dist/btw.js"
     }
   },
   "files": [
     "dist/plugin.js",
-    "dist/plugin.d.ts",
-    "dist/btw.js",
-    "dist/btw.d.ts"
+    "dist/plugin.d.ts"
   ],
   "scripts": {
     "build": "node build.mjs all",
@@ -31,7 +25,6 @@
     "opencode",
     "plugin",
     "advisor",
-    "btw",
     "kpihx"
   ],
   "repository": {
